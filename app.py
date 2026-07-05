@@ -95,6 +95,7 @@ def games():
     return jsonify({
         "count": len(filtered),
         "games": filtered
+       }) 
 @app.route('/')
 def index():
     return render_template('index.html')
