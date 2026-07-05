@@ -73,7 +73,28 @@ def build_combos(games, minutes):
         avg_score = round(sum(c['score'] for c in chosen)/len(chosen), 1) if chosen else None
         return {'type': title, 'total_odds': total_odds, 'avg_score': avg_score, 'picks': chosen}
     return [combo('safe'), combo('balanced'), combo('aggressive')]
+@app.route("/api/games")
+def games():
+    sport = request.args.get("sport", "all")
+    window = int(request.args.get("window", 60))
 
+    all_games = demo_games(sport if sport != "all" else "soccer") + demo_games("baseball")
+
+    now = datetime.now(KST)
+    filtered = []
+
+    for game in all_games:
+        starts_at = datetime.fromisoformat(game["starts_at"])
+        minutes_left = int((starts_at - now).total_seconds() / 60)
+
+        if 0 <= minutes_left <= window:
+            game["start_in_minutes"] = minutes_left
+            if sport == "all" or game["sport"] == sport:
+                filtered.append(game)
+
+    return jsonify({
+        "count": len(filtered),
+        "games": filtered
 @app.route('/')
 def index():
     return render_template('index.html')
